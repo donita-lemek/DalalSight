@@ -144,16 +144,22 @@ function App() {
   };
 
   const pieData = result
-    ? Object.entries(result.allocation)
-        .filter(([_, weight]) => weight > 0.01) // Show only weights > 1%
+    ? Object.entries(result.allocation as Record<string, number>)
+        .filter(([, weight]) => Number(weight) > 0.01)
         .map(([ticker, weight]) => ({
           name: ticker.replace(".NS", ""),
-          value: parseFloat((weight * 100).toFixed(2)),
+          value: parseFloat((Number(weight) * 100).toFixed(2)),
         }))
         .sort((a, b) => b.value - a.value)
     : [];
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: { name: string; value: number }[];
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="custom-tooltip glass-card" style={{ padding: "10px" }}>
@@ -163,7 +169,6 @@ function App() {
     }
     return null;
   };
-
   return (
     <div className="auth-container">
       <header className="app-header">
