@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}\\ml-engine\\venv\\Scripts\\python.exe",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/ml-engine",
+        "${workspaceFolder}/ml-engine/venv/Lib/site-packages"
+    ]
+}

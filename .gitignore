@@ -1,0 +1,20 @@
+# Node
+node_modules/
+api-gateway/node_modules/
+frontend/node_modules/
+
+# Python
+venv/
+.venv/
+ml-engine/venv/
+__pycache__/
+*.pyc
+
+# Build
+dist/
+
+# Env
+.env
+
+# Mac
+.DS_Store
