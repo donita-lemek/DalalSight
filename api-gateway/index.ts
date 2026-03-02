@@ -9,7 +9,13 @@ const app = express();
 const port = process.env.PORT || 3001;
 const ML_ENGINE_URL = process.env.ML_ENGINE_URL || "https://dalalsight.onrender.com";
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["https://dalal-sight.vercel.app", "http://localhost:5173"],
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  }),
+);
 app.use(express.json());
 
 app.get('/health', (req, res) => {
