@@ -7,7 +7,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
-const ML_ENGINE_URL = process.env.ML_ENGINE_URL || 'http://localhost:8000';
+const ML_ENGINE_URL = process.env.ML_ENGINE_URL || "https://dalalsight.onrender.com";
 
 app.use(cors());
 app.use(express.json());
@@ -40,5 +40,5 @@ app.post('/api/allocate', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`API Gateway listening at http://localhost:${port}`);
+    console.log(`API Gateway listening on ${port}`);
 });
