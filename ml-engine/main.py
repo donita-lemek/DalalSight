@@ -22,7 +22,7 @@ class AllocationRequest(BaseModel):
     risk_capacity: str
     selected_industries: List[str]
 
-# Mocking expected returns since real-time training of BiLSTM/ARIMA is too slow for synchronous API
+# Mock expected returns
 MOCK_EXPECTED_RETURNS = {
     "RELIANCE.NS": 0.12,
     "TCS.NS": 0.15,
@@ -34,35 +34,55 @@ MOCK_EXPECTED_RETURNS = {
     "HINDUNILVR.NS": 0.09
 }
 
-print("Loading historical data for Covariance matrix calculation...")
-# Fetch 1 year of data to compute covariance matrix quickly
-HISTORICAL_PRICES = fetch_historical_data(tickers=NIFTY_TICKERS, period="1y")
-print("Startup complete.")
-
 @app.get("/health")
 def health_check():
     return {"status": "ML Engine is running"}
 
+
 @app.post("/allocate")
 def allocate_portfolio(req: AllocationRequest):
-    # In a fully integrated version, we'd filter NIFTY_TICKERS by req.selected_industries.
-    # For now, we use all tickers to ensure the covariance matrix matches.
-    
-    # Initialize the allocator
-    allocator = ModernPortfolioTheoryAllocator(
-        expected_returns=MOCK_EXPECTED_RETURNS, 
-        historical_prices=HISTORICAL_PRICES,
-        risk_free_rate=0.07
-    )
-    
-    # Run the Markowitz optimizer
-    allocation_weights = allocator.allocate(risk_capacity=req.risk_capacity)
-    
-    # Filter out near-zero weights
-    cleaned_allocation = {k: round(v, 4) for k, v in allocation_weights.items() if v > 0.001}
-    
-    return {
-        "risk_capacity": req.risk_capacity,
-        "allocation": cleaned_allocation,
-        "expected_portfolio_return": sum(MOCK_EXPECTED_RETURNS[k] * v for k, v in cleaned_allocation.items()),
-    }
+
+    try:
+        print("Request received:", req)
+
+        # Fetch fresh market data per request
+        historical_prices = fetch_historical_data(
+            tickers=NIFTY_TICKERS,
+            period="1y"
+        )
+
+        print("Historical data columns:", historical_prices.columns)
+
+        allocator = ModernPortfolioTheoryAllocator(
+            expected_returns=MOCK_EXPECTED_RETURNS,
+            historical_prices=historical_prices,
+            risk_free_rate=0.07
+        )
+
+        allocation_weights = allocator.allocate(
+            risk_capacity=req.risk_capacity
+        )
+
+        cleaned_allocation = {
+            k: round(v, 4)
+            for k, v in allocation_weights.items()
+            if v > 0.001
+        }
+
+        expected_return = sum(
+            MOCK_EXPECTED_RETURNS[k] * v
+            for k, v in cleaned_allocation.items()
+        )
+
+        return {
+            "risk_capacity": req.risk_capacity,
+            "allocation": cleaned_allocation,
+            "expected_portfolio_return": expected_return,
+        }
+
+    except Exception as e:
+        print("ERROR:", str(e))
+        return {
+            "error": "Portfolio allocation failed",
+            "details": str(e)
+        }
